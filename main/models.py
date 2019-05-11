@@ -47,6 +47,7 @@ class Question(models.Model):
     answer_type = models.CharField(max_length=2, choices=ANSWER_TYPE_CHOICES, default=SHORT)
     response_type = models.CharField(max_length=2, choices=RESPONSE_TYPE_CHOICES, default=SLOW)
     participant_type = models.CharField(max_length=2, choices=PARTICIPANT_TYPE_CHOICES, default=SINGLE)
+    flags = models.ForeignKey(QuestionFlags, unique=True, null=True)
     follow_up = models.BooleanField(default=False)
     questionnaire = models.BooleanField(default=False)
     attachment = models.ForeignKey(Attachment, null=True)
@@ -58,15 +59,55 @@ class Question(models.Model):
 class Answer(models.Model):
     user = models.ForeignKey(User)
     question = models.ForeignKey(Question)
-    rating = models.ForeignKey(Rating, null=True)
+    rating = models.ForeignKey(Ratings, null=True)
+    question_type = models.CharField(max_length=2, choices=QUESTION_TYPE_CHOICES, default=CLARIFICATION)
+    answer_type = models.CharField(max_length=2, choices=ANSWER_TYPE_CHOICES, default=SHORT)
+    response_type = models.CharField(max_length=2, choices=RESPONSE_TYPE_CHOICES, default=SLOW)
+    participant_type = models.CharField(max_length=2, choices=PARTICIPANT_TYPE_CHOICES, default=SINGLE)
+    flags = models.ForeignKey(AnswerFlags, unique=True, null=True)
     transcript = models.ForeignKey(Transcript, null=True)
     created_on = models.DateTimeField(auto_now=True)
     location = models.TextField()
     records = models.ForeignKey(Records)
 
 
+class RewardCard(models.Model):
+    # r:role
+    QUESTIONER = 'rQ'
+    ANSWERER = 'rA'
+    ROLE_CHOICES = (
+        (QUESTIONER, 'Questioner'),
+        (ANSWERER, 'Answerer'),
+    )
+    user = models.ForeignKey(User)
+    user_role = models.CharField(max_length=2, choices=ROLE_CHOICES, default=QUESTIONER)
+    card_type = models.CharField(max_length=128)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
+class RewardPoint(models.Model):
+    # r:role
+    QUESTIONER = 'rQ'
+    ANSWERER = 'rA'
+    ROLE_CHOICES = (
+        (QUESTIONER, 'Questioner'),
+        (ANSWERER, 'Answerer'),
+    )
+    user = models.ForeignKey(User)
+    user_role = models.CharField(max_length=2, choices=ROLE_CHOICES, default=QUESTIONER)
+    event = models.CharField(max_length=128)
+    point = models.IntegerField()
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
 class Rewards(models.Model):
     user = models.ForeignKey(User)
+    current_cards = models.ForeignKey(RewardCard, null=True)
+    used_cards = models.ForeignKey(RewardCard, null=True)
+    current_points = models.ForeignKey(RewardPoint, null=True)
+    used_points = models.ForeignKey(RewardPoint, null=True)
 
 
 class Transcript(models.Model):
@@ -80,7 +121,6 @@ class Record(models.Model):
     properties = models.TextField(null=True)
     created_on = models.DateTimeField(auto_now=True)
     location = models.TextField()
-
 
 
 class Records(models.Model):
@@ -99,21 +139,36 @@ class Records(models.Model):
     created_on = models.DateTimeField(auto_now=True)
 
 
+class RatingType(models.Model):
+    rating_type = models.CharField(max_length=128)
+
 
 class Ratings(models.Model):
-    rating = models.ForeignKey(Rating)
+    ratings = models.ForeignKey(Rating)
+    average_ratings = models.ForeignKey(AverageRating)
+    rating_types = models.ForeignKey(RatingType)
     created_on = models.DateTimeField(auto_now=True)
     location = models.TextField()
-
-
-
-class Rating(models.Model):
-    voters = models.ForeignKey(User)
-    type = models.TextField()
-    score = models.DecimalField()
     is_average = models.BooleanField(default=False)
     no_of_votes = models.IntegerField()
 
+
+class Rating(models.Model):
+    QUESTIONER = 'rQ'
+    ANSWERER = 'rA'
+    ROLE_CHOICES = (
+        (QUESTIONER, 'Questioner'),
+        (ANSWERER, 'Answerer'),
+    )
+    user = models.ForeignKey(User)
+    user_role = models.CharField(max_length=2, choices=ROLE_CHOICES, default='questioner')
+    rating_type = models.ForeignKey(RatingType)
+    score = models.IntegerField()
+
+
+class AverageRating(models.Model):
+    rating_type = models.ForeignKey(RatingType, unique=True)
+    score = models.DecimalField()
 
 
 class Attachment(models.Model):
@@ -142,9 +197,31 @@ class UserLanguage(models.Model):
     speaking_proficiency = models.CharField(max_length=2, choices=PROFICIENCY_CHOICES, default=NATIVE)
 
 
+class UserLocation(models.Model):
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
 class User(AbstractUser):
     languages = models.ForeignKey(UserLanguage)
-    bilingual = models.BooleanField(default=False)
+    answers = models.ForeignKey(Answer)
+    expertises = models.ForeignKey(UserExpertise)
+    locations = models.ForeignKey(UserLocation)
+    multilingual = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
+class UserExpertise(models.Model):
+    dewey = models.ForeignKey(Dewey, unique=True)
+    rating_score = models.DecimalField()
+    answers = models.ForeignKey(Answer)
+
+
+class Dewey(models.Model):
+    number = models.IntegerField()
+    label = models.TextField()
+    level = models.IntegerField()
 
 
 class Message(models.Model):
@@ -197,7 +274,6 @@ class Bids(models.Model):
     resolved_on = models.DateTimeField(null=True)
 
 
-
 class Bid(models.Model):
     user = models.ForeignKey(User)
     short_message = models.TextField()
@@ -207,3 +283,86 @@ class Bid(models.Model):
     is_accepted_by_user = models.BooleanField(default=False)
     is_accepted_by_platform = models.BooleanField(default=False)
     is_fullfilled = models.BooleanField(default=False)
+
+
+class Advice(models.Model):
+    answer = models.ForeignKey(Answers, unique=True)
+    ratings = models.ForeignKey(Ratings)
+    created_on = models.DateTimeField(auto_now=True)
+    intro_views = models.IntegerField()
+    intro_viewers = models.ForeignKey(User)
+    full_views = models.IntegerField()
+    full_viewers = models.ForeignKey(User)
+
+
+class PaymentReceived(models.Model):
+    user = models.ForeignKey(User)
+    method = models.TextField()
+    events = models.ForeignKey(PaymentEvent)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+    amount = models.DecimalField()
+    currency = models.CharField(max_length=128)
+    status = models.CharField(max_length=64)
+    disputes = models.ForeignKey(Dispute, null=True)
+    success = models.BooleanField(default=False)
+    refund = models.BooleanField(default=False)
+    chargeback = models.BooleanField(default=False)
+
+
+class PaymentMade(models.Model):
+    recipient = models.ForeignKey(User)
+    method = models.TextField()
+    events = models.ForeignKey(PaymentEvent)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+    amount = models.DecimalField()
+    currency = models.CharField(max_length=128)
+    status = models.CharField(max_length=64)
+    disputes = models.ForeignKey(Dispute, null=True)
+    success = models.BooleanField(default=False)
+
+
+class DisputeEvents(models.Model):
+    status = models.TextField()
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
+class Dispute(models.Model):
+    user = models.ForeignKey(User)
+    events = models.ForeignKey(DisputeEvents)
+    is_resolved = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now=True)
+    resolved_on = models.DateTimeField(null=True)
+    location = models.TextField()
+
+
+class PaymentEvent(models.Model):
+    status = models.TextField()
+    created_on = models.DateTimeField(auto_now=True)
+
+
+class Flag(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    flag_type = models.CharField(max_length=128)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
+class QuestionFlags(models.Model):
+    question = models.ForeignKey(Question, unique=True)
+    flags = models.ForeignKey(Flag)
+    status = models.CharField(max_length=64)
+    is_valid = models.BooleanField()
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
+
+
+class AnswerFlags(models.Model):
+    answer = models.ForeignKey(Answer, unique=True)
+    flags = models.ForeignKey(Flag)
+    status = models.CharField(max_length=64)
+    is_valid = models.BooleanField()
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()
