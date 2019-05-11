@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content_mid %}
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-row">
+            {{ form.name.label_tag }}
+            <input type="text" class="form-control{% if form.name.errors %} is-invalid {% endif %}"
+                   id="id_name" name="name" value="{{ form.name.value | default:"" }}">
+            {% if form.name.errors %}
+                <div class="invalid-feedback">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="form-row">
+            {{ form.message.label_tag}}
+            <textarea class="form-control {% if form.message.errors %} is-invalid {% endif %}"
+                   required id="id_message" name="message" rows=3>
+            {{ form.message.value | default:"" }}
+            </textarea>
+            {% if form.message.errors %}
+                <div class="invalid-feedback">
+                    {{ form.message.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Contact</button>
+    </form>
+
+{% endblock content_mid %}
