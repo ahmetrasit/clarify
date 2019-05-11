@@ -138,3 +138,5 @@ if not DEBUG:
     EMAIL_HOST_PASSWORD = 'user_password'
 else:
     EMAIL_BACKEND = ('django.core.mail.backends.console.EmailBackend')
+
+AUTH_USER_MODEL = 'main.User'
