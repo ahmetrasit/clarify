@@ -281,7 +281,8 @@ class User(AbstractUser):
     username = None
     email = models.EmailField('email address', unique=True)
     phone = models.CharField(max_length=15, null=True)
-    is_confirmed = models.BooleanField(default=False)
+    email_confirmed = models.BooleanField(default=False)
+    phone_confirmed = models.BooleanField(default=False)
     languages = models.ForeignKey(UserLanguage, on_delete=models.CASCADE, null=True)
     answers = models.ForeignKey(Answer, related_name='user_answers', on_delete=models.DO_NOTHING, null=True)
     questions = models.ForeignKey(Question, related_name='user_questions', on_delete=models.DO_NOTHING, null=True)
@@ -440,4 +441,11 @@ class PaymentMade(models.Model):
     disputes = models.ForeignKey(Dispute, null=True, on_delete=models.DO_NOTHING)
     success = models.BooleanField(default=False)
 
+
+class EmailConfirmation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    sent_key = models.CharField(max_length=16)
+    status = models.BooleanField(default=False)  #True if confirmed, False if waiting
+    created_on = models.DateTimeField(auto_now=True)
+    confirmed_on= models.DateTimeField(null=True)
 

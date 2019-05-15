@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.forms import UsernameField
 from . import models
 import logging
+from random import randint
 
 logger = logging.getLogger(__name__)
 class ContactForm(forms.Form):
@@ -22,8 +23,15 @@ class UserCreationForm(DjangoUserCreationForm):
         fields = ('email',)
         field_classes = {'email':UsernameField}
 
-    def send_mail(self):
+    def create_email_confirmation_code(self, user):
+        random_code = randint(111111, 999999)
+        confirmation = models.EmailConfirmation(user=user, sent_key=random_code)
+        confirmation.save()
+        return random_code
+
+    def send_mail(self, code):
         logger.info('sending sign-up email for %s', self.cleaned_data['email'])
-        message = 'Welcome {}!'.format(self.cleaned_data['email'])
+
+        message = 'Welcome {}! Please enter the following code to confirm your e-mail address: {} '.format(self.cleaned_data['email'], code)
         send_mail('Welcome to clarification!', message, 'welcome@clarify4me.com',
                   [self.cleaned_data['email']], fail_silently=True)
