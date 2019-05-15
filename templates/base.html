@@ -33,6 +33,11 @@
             </ul>
         </div>
     </nav>
+    <div class="col-md-12">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
 
     <div class="col-md-12">
         <div class="row text-center m-0">

@@ -73,9 +73,11 @@ class ParticipantType(models.Model):
 
 
 class Dewey(models.Model):
-    number = models.IntegerField()
+    number = models.IntegerField(null=True)
     label = models.TextField()
     level = models.IntegerField()
+    parents = models.ForeignKey('Dewey', related_name='dewey_parents', on_delete=models.DO_NOTHING, null=True)
+    children = models.ForeignKey('Dewey', related_name='dewey_children', on_delete=models.DO_NOTHING, null=True)
 
 
 
