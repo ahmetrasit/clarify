@@ -1,17 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import HttpResponseRedirect, reverse
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
 from main import forms, models
 import logging
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 logger = logging.getLogger(__name__)
 
 
 class SignUpView(FormView):
-    template_name = 'signup.html'
+    template_name = 'sign-up.html'
     form_class = forms.UserCreationForm
 
     def get_success_url(self):
@@ -31,6 +32,8 @@ class SignUpView(FormView):
         form.send_mail(code)
         messages.info(self.request, 'Signed up successfully. We\'re glad to see you here!')
         return response
+
+
 
 
 
@@ -61,3 +64,7 @@ class ContactUsView(FormView):
 
 
 
+@login_required(login_url='/sign-in/')
+def sign_out(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('home'))
