@@ -32,11 +32,13 @@
                 <li class="nav-item {% if request.path == "/about-us/" %}active {% endif %}"">
                     <a class="nav-link" href="/about-us/">About Us</a>
                 </li>
+                <li class="nav-item {% if request.path == "/tutorials/" %}active {% endif %}"">
+                    <a class="nav-link" href="/tutorials/">Tutorials</a>
+                </li>
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="/profile/account">{{ user.email }}</a>
-
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="/sign-out/"><i class="fas fa-sign-out-alt"></i></a>
@@ -44,7 +46,7 @@
             </ul>
         </div>
     </nav>
-    <div class="col-md-12">
+    <div class="col-md-12 text-center">
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
       {% endfor %}
@@ -52,33 +54,62 @@
 
     <div class="col-md-12">
         <div class="row text-center m-0">
-                {% block content_up %}
-                {% endblock content_up %}
+          {% block content_up %}
+          {% endblock content_up %}
         </div>
     </div>
+
+
+
     {% if user.is_authenticated %}
-    <div class="col-md-12">
-        <div class="row text-center m-0">
-            <div class="col-md-3 " style="text-align: center;">
-                {% block content_left %}
-                {% endblock content_left %}
+      {% if user.is_active %}
+        {% if user.email_confirmed %}
+          <div class="col-md-12">
+              <div class="row text-center m-0">
+                  <div class="col-md-3 " style="text-align: center;">
+                      {% block content_left %}
+                      {% endblock content_left %}
+                  </div>
+                  <div class="col-md-6 p-0" style="text-align: center;">
+                     {% block content_mid %}
+                     {% endblock content_mid %}
+                  </div>
+                  <div class="col-md-3" style="text-align: center;">
+                     {% block content_right %}
+                     {% endblock content_right %}
+                  </div>
+              </div>
+              <div class="row">
+                  <div class="col-md-12">
+                     {% block content_bottom %}
+                     {% endblock content_bottom %}
+                  </div>
+              </div>
+          </div>
+          {% else %}
+            <div class="row">
+              <div class="col-md-4"></div>
+              <div class="col-md-4">
+                <form method="post" action="/confirm_email/">
+                  {% csrf_token %}
+                  {{ form.non_field_errors }}
+                  <div class="form-group">
+                    <div class="h2 text-center">Confirmation Code</div>
+                    <p class="text-center" for="id_email_code">Please enter the code sent to your email:</p>
+
+                    <input type="email_code" class="form-control {% if form.email_code.errors %} is-invalid{% endif %}"
+                           id="id_email_code" name="email_code"
+                           value = "{{ form.email_code.value|default:"" }}">
+                    {% if form.email_code.errors %}
+                      <div class="invalid-feedback">
+                        {{ form.email_code.errors }}
+                      </div>
+                    {% endif %}
+                  </div>
+              </div>
             </div>
-            <div class="col-md-6 p-0" style="text-align: center;">
-               {% block content_mid %}
-               {% endblock content_mid %}
-            </div>
-            <div class="col-md-3" style="text-align: center;">
-               {% block content_right %}
-               {% endblock content_right %}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-               {% block content_bottom %}
-               {% endblock content_bottom %}
-            </div>
-        </div>
-    </div>
+          {% endif %}
+        {% endif %}
     {% else %}
       <div class="col-md-12 text-center">
         <a href="sign-in/">Sign In</a> | <a href="sign-up/">Sign Up</a> | <a href="contact/">Contact</a>

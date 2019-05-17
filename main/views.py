@@ -1,4 +1,6 @@
-from django.shortcuts import HttpResponseRedirect, reverse
+import datetime
+
+from django.shortcuts import HttpResponseRedirect, reverse, render, redirect
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
@@ -6,9 +8,32 @@ from main import forms, models
 import logging
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 
 logger = logging.getLogger(__name__)
+
+
+def confirm_email(request):
+    if request.method =='POST':
+        email_confirmation = models.EmailConfirmation.objects.get(user=request.user)
+        sent_key = request.POST['email_code']
+        print(sent_key, email_confirmation.sent_key)
+        if sent_key == email_confirmation.sent_key:
+            curr_user = request.user
+            curr_user.email_confirmed = True
+            curr_user.save()
+            email_confirmation.status = True
+            email_confirmation.confirmed_on = datetime.datetime.now()
+            print(email_confirmation)
+            email_confirmation.save()
+            messages.info(request, 'E-mail confirmed!. Why don\'t you start with tutorials?')
+            return redirect('/')
+        else:
+            messages.warning(request, 'Something wrong with the confirmation code?')
+            return redirect('/')
+    else:
+        return redirect('/')
 
 
 class SignUpView(FormView):
@@ -17,6 +42,7 @@ class SignUpView(FormView):
 
     def get_success_url(self):
         redirect_to = self.request.GET.get('next', '/')
+        messages.info(self.request, 'Signed up successfully. We\'re glad to see you here!')
         return redirect_to
 
     def form_valid(self, form):
@@ -32,8 +58,6 @@ class SignUpView(FormView):
         form.send_mail(code)
         messages.info(self.request, 'Signed up successfully. We\'re glad to see you here!')
         return response
-
-
 
 
 

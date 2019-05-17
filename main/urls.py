@@ -13,4 +13,5 @@ urlpatterns = [
     path('sign-up/', views.SignUpView.as_view(), name='signup'),
     path('sign-in/', auth_views.LoginView.as_view(template_name='sign-in.html', form_class=forms.AuthenticationForm), name='sign-in'),
     path('sign-out/', views.sign_out, name='sign-out'),
+    path('confirm_email/', views.confirm_email, name='confirm_email'),
 ]

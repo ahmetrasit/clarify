@@ -280,6 +280,11 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     email = models.EmailField('email address', unique=True)
+    first_name = models.CharField(max_length=64, null=True)
+    last_name = models.CharField(max_length=64, null=True)
+    date_of_birth = models.DateField(null=True)
+    can_ask = models.BooleanField(default=False)
+    can_tell = models.BooleanField(default=False)
     phone = models.CharField(max_length=15, null=True)
     email_confirmed = models.BooleanField(default=False)
     phone_confirmed = models.BooleanField(default=False)
@@ -447,5 +452,34 @@ class EmailConfirmation(models.Model):
     sent_key = models.CharField(max_length=16)
     status = models.BooleanField(default=False)  #True if confirmed, False if waiting
     created_on = models.DateTimeField(auto_now=True)
-    confirmed_on= models.DateTimeField(null=True)
+    confirmed_on = models.DateTimeField(null=True)
 
+
+class UserEvent(models.Model):
+    CONFIRMATION_OF_EMAIL = 'cEM'
+    CONFIRMATION_OF_PHONE_NUMBER = 'cPN'
+    WRONG_PASSWORD = 'wPW'
+    WRONG_EMAIL_CONFIRMATION_CODE = 'wEC'
+    WRONG_PHONE_CONFIRMATION_CODE = 'wPC'
+    CHANGE_OF_PAYMENT_INFO = 'cPI'
+    CHANGE_OF_PHONE_NUMBER = 'cPN'
+    CHANGE_OF_ADDRESS = 'cAD'
+    REQUEST_OF_PASSWORD_RESET = 'rPR'
+    REQUEST_OF_PASSWORD_CHANGE = 'rPC'
+    EVENTS = (
+        (CONFIRMATION_OF_EMAIL, 'cEM'),
+        (CONFIRMATION_OF_PHONE_NUMBER, 'cPN'),
+        (WRONG_PASSWORD, 'wrong password'),
+        (WRONG_EMAIL_CONFIRMATION_CODE, 'wrong email confirmation code'),
+        (WRONG_PHONE_CONFIRMATION_CODE, 'wrong phone confirmation code'),
+        (CHANGE_OF_PAYMENT_INFO, 'change of payment info'),
+        (CHANGE_OF_PHONE_NUMBER, 'change of phone number'),
+        (CHANGE_OF_ADDRESS, 'change of address'),
+        (REQUEST_OF_PASSWORD_RESET, 'request of password reset'),
+        (REQUEST_OF_PASSWORD_CHANGE, 'request of password change')
+    )
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    event = models.CharField(max_length=3, choices=EVENTS)
+    detail = models.CharField(max_length=64, null=True)
+    created_on = models.DateTimeField(auto_now=True)
+    location = models.TextField()

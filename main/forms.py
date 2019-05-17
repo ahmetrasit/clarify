@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 from django.core.mail import send_mail
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
@@ -31,8 +33,6 @@ class AuthenticationForm(forms.Form):
 
     def get_user(self):
         return self.user
-
-
 
 
 
