@@ -482,4 +482,4 @@ class UserEvent(models.Model):
     event = models.CharField(max_length=3, choices=EVENTS)
     detail = models.CharField(max_length=64, null=True)
     created_on = models.DateTimeField(auto_now=True)
-    location = models.TextField()
+    location = models.TextField(null=True)

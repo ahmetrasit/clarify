@@ -17,20 +17,14 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item {% if request.path == "/" %}active {% endif %}">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
                 <li class="nav-item {% if request.path == "/ask/" %}active {% endif %}"">
                     <a class="nav-link" href="/ask/">Ask</a>
                 </li>
-                <li class="nav-item {% if request.path == "/explain/" %}active {% endif %}"">
-                    <a class="nav-link" href="/tell/">Tell</a>
+                <li class="nav-item {% if request.path == "/clarify/" %}active {% endif %}"">
+                    <a class="nav-link" href="/clarify/">Clarify</a>
                 </li>
                 <li class="nav-item {% if request.path == "/messages/" %}active {% endif %}"">
                     <a class="nav-link" href="/FAQ/">FAQ</a>
-                </li>
-                <li class="nav-item {% if request.path == "/about-us/" %}active {% endif %}"">
-                    <a class="nav-link" href="/about-us/">About Us</a>
                 </li>
                 <li class="nav-item {% if request.path == "/tutorials/" %}active {% endif %}"">
                     <a class="nav-link" href="/tutorials/">Tutorials</a>
@@ -48,7 +42,7 @@
     </nav>
     <div class="col-md-12 text-center">
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        <div class="alert {{ message.tags }}">{{ message }}</div>
       {% endfor %}
     </div>
 
@@ -111,9 +105,28 @@
           {% endif %}
         {% endif %}
     {% else %}
-      <div class="col-md-12 text-center">
-        <a href="sign-in/">Sign In</a> | <a href="sign-up/">Sign Up</a> | <a href="contact/">Contact</a>
-    </div>
+      {% if request.path == "/" %}
+      <div class="row">
+        <div class="col-md-2 text-center"></div>
+        <div class="col-md-8 text-center">
+          <div class="jumbotron" style="background:transparent !important">
+            <h1 class="display-5 bg-danger text-white rounded">Got more confused on Google?</h1>
+            <h1 class="display-4 bg-success text-white rounded p-3">Then, ask real people!</h1>
+            <p style="font-size:1.7em" class="text-info">
+              <a clas href="/sign-in/">Sign In</a> | <a href="/sign-up/">Sign Up</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      {% else %}
+        <div class="col-md-12 text-center">
+          <p style="font-size:1.7em" class="text-info">
+            <a clas href="/sign-in/">Sign In</a> | <a href="/sign-up/">Sign Up</a>
+          </p>
+        </div>
+      {% endif %}
+
+
     {% endif %}
 
     <script src="{% static "js/jquery.min.js" %}"></script>

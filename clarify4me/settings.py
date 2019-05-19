@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.contrib.messages import constants as messages_constants
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -144,3 +146,12 @@ AUTH_USER_MODEL = 'main.User'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/sign-in/'
 LOGOUT_REDIRECT_URL = '/'
+
+MESSAGE_TAGS = {
+    messages_constants.DEBUG: 'alert-info',
+    messages_constants.INFO: 'alert-info',
+    messages_constants.SUCCESS: 'alert-success',
+    messages_constants.WARNING: 'alert-warning',
+    messages_constants.ERROR: 'alert-danger',
+}
+

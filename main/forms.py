@@ -12,6 +12,19 @@ from random import randint
 logger = logging.getLogger(__name__)
 
 
+class EmailConfirmationForm(forms.Form):
+    email_code = forms.CharField(min_length=6, max_length=6)
+
+    def update_model(self, confirmation):
+        print('update_model')
+        confirmation.confirmed_on = datetime.datetime.now()
+        confirmation.user.can_ask = True
+        confirmation.user.email_confirmed = True
+        confirmation.user.save()
+        confirmation.status = True
+        confirmation.save()
+
+
 class AuthenticationForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(strip=False, widget=forms.PasswordInput)

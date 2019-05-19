@@ -5,6 +5,8 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
 from main import forms, models
+from django import forms as django_forms
+
 import logging
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -14,26 +16,22 @@ from django.contrib import messages
 logger = logging.getLogger(__name__)
 
 
-def confirm_email(request):
-    if request.method =='POST':
-        email_confirmation = models.EmailConfirmation.objects.get(user=request.user)
-        sent_key = request.POST['email_code']
-        print(sent_key, email_confirmation.sent_key)
-        if sent_key == email_confirmation.sent_key:
-            curr_user = request.user
-            curr_user.email_confirmed = True
-            curr_user.save()
-            email_confirmation.status = True
-            email_confirmation.confirmed_on = datetime.datetime.now()
-            print(email_confirmation)
-            email_confirmation.save()
-            messages.info(request, 'E-mail confirmed!. Why don\'t you start with tutorials?')
-            return redirect('/')
+class EmailConfirmationView(LoginRequiredMixin, FormView):
+    template_name = 'home.html'
+    form_class = forms.EmailConfirmationForm
+    success_url = '/'
+
+    def form_valid(self, form):
+        sent_key = form.cleaned_data.get('email_code')
+        confirmation = models.EmailConfirmation.objects.get(user=self.request.user)
+        if confirmation.sent_key == sent_key:
+            form.update_model(confirmation)
+            models.UserEvent(user=self.request.user, event='cEM').save()
+            messages.success(self.request, 'Your e-mail is confirmed. Why don\'t you start with the tutorials?')
         else:
-            messages.warning(request, 'Something wrong with the confirmation code?')
-            return redirect('/')
-    else:
-        return redirect('/')
+            models.UserEvent(user=self.request.user, event='wEC').save()
+            messages.error(self.request, 'Invalid activation code, please check the code and try again!')
+        return super().form_valid(form)
 
 
 class SignUpView(FormView):
@@ -91,4 +89,4 @@ class ContactUsView(FormView):
 @login_required(login_url='/sign-in/')
 def sign_out(request):
     logout(request)
-    return HttpResponseRedirect(reverse('home'))
+    return HttpResponseRedirect(reverse('sign-in'))
