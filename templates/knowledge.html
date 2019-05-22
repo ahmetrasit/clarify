@@ -1,0 +1,167 @@
+{% extends 'base.html'%}
+{% load static %}
+
+
+{% block content_up %}
+  <div class="col-md-1"></div>
+  <div class="col-md-10">
+    <div class="main row mt-5">
+      <div class="first col-sm-4 show">
+      </div>
+      <div class="second col-sm-4 d-none">
+      </div>
+      <div class="third col-sm-4 d-none">
+      </div>
+    </div>
+  </div>
+{% endblock content_up %}
+
+
+{% block content_left %}
+
+{% endblock content_left %}
+
+
+{% block content_right %}
+
+{% endblock content_right %}
+
+{% block content_bottom %}
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script type="text/javascript">
+    var f = null
+    var fi = null
+    var s = null
+    var si = null
+    var t = null
+    var ti = null
+    var checked = {}
+    var sep = '_'
+
+    d3.json("{% static "json/curated_categories_main.json" %}").then(function(data){
+      console.log(data)
+      d3.select('.first').selectAll('div').data(Object.keys(data)).enter()
+        .append('div')
+          .append('button')
+            .attr('class', function(d,i){return 'first_' + i + ' text-white btn btn-block d-block bg-success p-0 m-1'})
+            .html(function(d){return d}).on('click', toggleFirst)
+
+
+      function toggleFirst(d, i){
+        console.log(d);
+        if (d == f) {
+          f = null
+          fi = null
+          $('.second').addClass('d-none')
+          $('.third').addClass('d-none')
+          $('.fourth').addClass('d-none')
+        }else{
+          f = d
+          fi = i
+          $("div.second").removeClass("d-none")
+          $('.first').children().children().removeClass('bg-success').addClass('bg-secondary')
+          $('.first_'+i).addClass('bg-success').removeClass('bg-secondary')
+          d3.select('.second').selectAll('div').remove()
+          d3.select('.third').selectAll('div').remove()
+
+          var sub_categories = Object.keys(data[d]).filter(x => data[d][x].length > 0).sort().concat( Object.keys(data[d]).filter(x => data[d][x].length == 0).sort())
+          console.log(sub_categories);
+          curr = d3.select('div.second').selectAll('div').data(sub_categories).enter()
+            .append('div').attr('class', 'row')
+              .append('button')
+                .attr('class', function(d,i){
+                  if (data[f][d].length > 1) {
+                      return 'second_' + i + ' text-white btn btn-block bg-success p-0 m-1'
+                  }else {
+                    return 'second_' + i + ' btn btn-block bg-light p-0 m-1'
+                  }
+                })
+                .append('div').attr('class', 'row')
+          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){return checked['checkbox_' + [fi,i].join(sep)] }).attr('class', function(d,i){return 'checkbox_'+[fi,i].join(sep) }).on('click', saveSecondChecked)
+          curr.append('div').attr('class', 'col-md-10').html(function(d){return d}).on('click', toggleSecond)
+
+        }
+      }
+
+
+      function toggleSecond(d, i){
+        console.log(d);
+        if (d == s) {
+          s = null
+          si = null
+          $('.third').addClass('d-none')
+          $('.fourth').addClass('d-none')
+        }else{
+          s = d
+          si = i
+          $("div.third").removeClass("d-none")
+          $('.second').children().children().removeClass('bg-success').addClass('bg-secondary')
+          $('.second_'+i).addClass('bg-success').removeClass('bg-secondary')
+          d3.select('.third').selectAll('div').remove()
+          d3.select('.fourth').selectAll('div').remove()
+
+          curr = d3.select('div.third').selectAll('div').data(data[f][d]).enter()
+          .append('div').attr('class', 'row')
+            .append('button')
+              .attr('class', function(d,i){
+                  return 'third_' + i + ' btn btn-block bg-light p-0 m-1'
+              })
+              .append('div').attr('class', 'row')
+        curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){
+          if (checked['checkbox_' + [fi,si].join(sep)]) {
+            checked['checkbox_' + [fi,si,i].join(sep)] = true
+            return true
+          }else {
+            return checked['checkbox_' + [fi,si,i].join(sep)]
+          }
+        }).attr('class', function(d,i){return 'checkbox_'+[fi, si, i].join(sep) }).on('click', saveThirdChecked)
+        curr.append('div').attr('class', 'col-md-10').html(function(d){return d})
+
+          }
+        }
+
+
+        function saveSecondChecked(d,i){
+          console.log(this.className);
+          if (this.checked) {
+            checked[this.className] = true
+            for (var k = 0; k < data[f][d].length; k++) {
+              checked[this.className + sep + k] = true
+              $('.' + this.className + sep + k).prop('checked', true)
+            }
+          }else {
+            delete checked[this.className]
+            for (var k = 0; k < data[f][d].length; k++) {
+              delete checked[this.className + sep + k]
+              $('.' + this.className + sep + k).prop('checked', false)
+            }
+          }
+        }
+
+
+        function saveThirdChecked(d,i){
+          if (this.checked) {
+            checked[this.className] = true
+            parent = this.className.split(sep).slice(0,3).join(sep)
+            siblings = data[f][s]
+            parent_checked = true
+            for (var k = 0; k < siblings.length; k++) {
+              if(! $('.' + parent+sep+k).prop('checked') ){
+                parent_checked = false
+              }
+            }
+            if (parent_checked) {
+                $('.' + parent).prop('checked', true)
+                checked[parent] = true
+            }
+          }else {
+            delete checked[this.className]
+            parent = this.className.split(sep).slice(0,3).join(sep)
+            delete checked[parent]
+            $('.' + parent).prop('checked', false)
+          }
+        }
+    })
+  </script>
+
+{% endblock content_bottom %}

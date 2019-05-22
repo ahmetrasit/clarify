@@ -1,0 +1,35 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block content_left %}
+    <div class="row border">
+        <div class="col-md-12">
+            Messages
+        </div>
+    </div>
+{% endblock content_left %}
+
+
+{% block content_mid %}
+  {% if user.can_tell %}
+    <div class="col-md-12 text-center">
+      Yes, you can either clarify a question or give feedback
+    </div>
+  {% else %}
+    <div class="col-md-2 text-center"></div>
+    <div class="col-md-8 text-center">
+      Which topics can you make more clear?
+    </div>
+  {% endif %}
+{% endblock content_mid %}
+
+{% block content_right %}
+    <div class="row border">
+        <div class="col-md-12">
+            Answers/Questions
+        </div>
+    </div>
+{% endblock content_right %}
+
+{% block content_bottom %}
+
+{% endblock content_bottom %}
