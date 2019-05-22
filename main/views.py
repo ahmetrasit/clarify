@@ -58,7 +58,6 @@ class SignUpView(FormView):
         return response
 
 
-
 class QuestionListView(ListView):
     template_name = 'question_list.html'
     paginate_by = 4
@@ -85,8 +84,16 @@ class ContactUsView(FormView):
         return super().form_valid(form)
 
 
-
 @login_required(login_url='/sign-in/')
 def sign_out(request):
     logout(request)
     return HttpResponseRedirect(reverse('sign-in'))
+
+
+@login_required(login_url='/sign-in/')
+def tell(request):
+    if request.user.can_tell:
+        return render(request, 'tell.html')
+    else:
+        return render(request, 'knowledge.html')
+
