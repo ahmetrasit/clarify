@@ -4,15 +4,28 @@
 
 {% block content_up %}
   <div class="col-md-1"></div>
-  <div class="col-md-10">
-    <div class="main row mt-5">
-      <div class="first col-sm-4 show">
-      </div>
-      <div class="second col-sm-4 d-none">
-      </div>
-      <div class="third col-sm-4 d-none">
+    <div class="col-md-10 text-center">
+      <div class="jumbotron m-2 pt-3" style="background:transparent !important">
+        <h1 class="display-4">What can you clarify?</h1>
+        <p class="lead">Tell us about what you know first. We'll match you with questions close to what you know.</p>
+        <div class="row">
+          <div class="zero col-sm-4 show" id="zero"></div>
+          <div class="first col-sm-4 show" id="first_column"></div>
+          <div class="second col-sm-4 d-none" id="second_column"></div>
+          <div class="third col-sm-4 d-none" id="third_column"></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <button role="button" id='submit' type="button" class="btn btn-block btn-success text-white" onclick="saveChecked()" disabled>Please check at least one category!</button>
+          </div>
+        </div>
       </div>
     </div>
+  <div class="col-md-1"></div>
+
+  <div class="col-md-1"></div>
+  <div class="col-md-10">
+
   </div>
 {% endblock content_up %}
 
@@ -37,9 +50,10 @@
     var ti = null
     var checked = {}
     var sep = '_'
+    var checkbox2category = {}
 
     d3.json("{% static "json/curated_categories_main.json" %}").then(function(data){
-      console.log(data)
+      //console.log(data)
       d3.select('.first').selectAll('div').data(Object.keys(data)).enter()
         .append('div')
           .append('button')
@@ -54,11 +68,13 @@
           fi = null
           $('.second').addClass('d-none')
           $('.third').addClass('d-none')
-          $('.fourth').addClass('d-none')
+          $('#zero').attr("class","col-sm-4")
+
         }else{
           f = d
           fi = i
           $("div.second").removeClass("d-none")
+          $('#zero').attr("class","col-sm-2")
           $('.first').children().children().removeClass('bg-success').addClass('bg-secondary')
           $('.first_'+i).addClass('bg-success').removeClass('bg-secondary')
           d3.select('.second').selectAll('div').remove()
@@ -77,7 +93,7 @@
                   }
                 })
                 .append('div').attr('class', 'row')
-          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){return checked['checkbox_' + [fi,i].join(sep)] }).attr('class', function(d,i){return 'checkbox_'+[fi,i].join(sep) }).on('click', saveSecondChecked)
+          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){checkbox2category['checkbox_' + [fi,i].join(sep)]=d; return checked['checkbox_' + [fi,i].join(sep)] }).attr('class', function(d,i){return 'checkbox_'+[fi,i].join(sep) }).on('click', saveSecondChecked)
           curr.append('div').attr('class', 'col-md-10').html(function(d){return d}).on('click', toggleSecond)
 
         }
@@ -90,15 +106,15 @@
           s = null
           si = null
           $('.third').addClass('d-none')
-          $('.fourth').addClass('d-none')
+          $('#zero').attr("class","col-sm-2")
         }else{
           s = d
           si = i
           $("div.third").removeClass("d-none")
+          $('#zero').attr("class","")
           $('.second').children().children().removeClass('bg-success').addClass('bg-secondary')
           $('.second_'+i).addClass('bg-success').removeClass('bg-secondary')
           d3.select('.third').selectAll('div').remove()
-          d3.select('.fourth').selectAll('div').remove()
 
           curr = d3.select('div.third').selectAll('div').data(data[f][d]).enter()
           .append('div').attr('class', 'row')
@@ -114,7 +130,7 @@
           }else {
             return checked['checkbox_' + [fi,si,i].join(sep)]
           }
-        }).attr('class', function(d,i){return 'checkbox_'+[fi, si, i].join(sep) }).on('click', saveThirdChecked)
+        }).attr('class', function(d,i){checkbox2category['checkbox_' + [fi, si, i].join(sep)]=d; return 'checkbox_'+[fi, si, i].join(sep) }).on('click', saveThirdChecked)
         curr.append('div').attr('class', 'col-md-10').html(function(d){return d})
 
           }
@@ -136,6 +152,7 @@
               $('.' + this.className + sep + k).prop('checked', false)
             }
           }
+          toggleSubmitButton()
         }
 
 
@@ -160,8 +177,26 @@
             delete checked[parent]
             $('.' + parent).prop('checked', false)
           }
+          toggleSubmitButton()
+        }
+
+        function toggleSubmitButton() {
+            if(Object.keys(checked).length > 0){
+                $('#submit').attr("disabled", false).html("I'm done!")
+            }else{
+                $('#submit').attr("disabled", true).html("Please check at least one category")
+            }
         }
     })
+
+  function saveChecked() {
+      var selected_categories = Object.keys(checked)
+      for (ci in selected_categories){
+          console.log(ci, checkbox2category[selected_categories[ci]])
+      }
+
+
+  }
   </script>
 
 {% endblock content_bottom %}
