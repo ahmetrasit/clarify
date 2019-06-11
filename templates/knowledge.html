@@ -16,7 +16,12 @@
         </div>
         <div class="row">
           <div class="col-sm-12">
-            <button role="button" id='submit' type="button" class="btn btn-block btn-success text-white" onclick="saveChecked()" disabled>Please check at least one category!</button>
+            <form method="post" id="form_selected_categories" action="/tell/">
+              {% csrf_token %}
+              <input type="hidden" name="selected_categories">
+              <button role="button" id="submit_button" type="button" class="btn btn-block btn-success text-white" onclick="saveChecked()" disabled>Please check at least one category!</button>
+            </form>
+
           </div>
         </div>
       </div>
@@ -87,13 +92,15 @@
               .append('button')
                 .attr('class', function(d,i){
                   if (data[f][d].length > 1) {
-                      return 'second_' + i + ' text-white btn btn-block bg-success p-0 m-1'
+                    checkbox2category['checkbox_' + [fi,i].join(sep)]=d;
+                    return 'second_' + i + ' text-white btn btn-block bg-success p-0 m-1'
                   }else {
+                     checkbox2category['checkbox_' + [fi,i].join(sep)]=d;
                     return 'second_' + i + ' btn btn-block bg-light p-0 m-1'
                   }
                 })
                 .append('div').attr('class', 'row')
-          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){checkbox2category['checkbox_' + [fi,i].join(sep)]=d; return checked['checkbox_' + [fi,i].join(sep)] }).attr('class', function(d,i){return 'checkbox_'+[fi,i].join(sep) }).on('click', saveSecondChecked)
+          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){return checked['checkbox_' + [fi,i].join(sep)] }).attr('class', function(d,i){return 'checkbox_'+[fi,i].join(sep) }).on('click', saveSecondChecked)
           curr.append('div').attr('class', 'col-md-10').html(function(d){return d}).on('click', toggleSecond)
 
         }
@@ -123,23 +130,24 @@
                   return 'third_' + i + ' btn btn-block bg-light p-0 m-1'
               })
               .append('div').attr('class', 'row')
-        curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){
-          if (checked['checkbox_' + [fi,si].join(sep)]) {
-            checked['checkbox_' + [fi,si,i].join(sep)] = true
-            return true
-          }else {
-            return checked['checkbox_' + [fi,si,i].join(sep)]
-          }
-        }).attr('class', function(d,i){checkbox2category['checkbox_' + [fi, si, i].join(sep)]=d; return 'checkbox_'+[fi, si, i].join(sep) }).on('click', saveThirdChecked)
-        curr.append('div').attr('class', 'col-md-10').html(function(d){return d})
+          curr.append('div').attr('class', 'col-md-1').append('input').attr('type', 'checkbox').property('checked', function(d,i){
+            if (checked['checkbox_' + [fi,si].join(sep)]) {
+              checked['checkbox_' + [fi,si,i].join(sep)] = true
+              return true
+            }else {
+              return checked['checkbox_' + [fi,si,i].join(sep)]
+            }
+          }).attr('class', function(d,i){checkbox2category['checkbox_' + [fi, si, i].join(sep)]=d; return 'checkbox_'+[fi, si, i].join(sep) }).on('click', saveThirdChecked)
+          curr.append('div').attr('class', 'col-md-10').html(function(d){return d})
 
           }
         }
 
-
         function saveSecondChecked(d,i){
           console.log(this.className);
           if (this.checked) {
+            toggleSecond(d,i)
+            toggleSecond(d,i)
             checked[this.className] = true
             for (var k = 0; k < data[f][d].length; k++) {
               checked[this.className + sep + k] = true
@@ -182,20 +190,23 @@
 
         function toggleSubmitButton() {
             if(Object.keys(checked).length > 0){
-                $('#submit').attr("disabled", false).html("I'm done!")
+                $('#submit_button').attr("disabled", false).html("I'm done!")
             }else{
-                $('#submit').attr("disabled", true).html("Please check at least one category")
+                $('#submit_button').attr("disabled", true).html("Please check at least one category")
             }
         }
     })
 
   function saveChecked() {
+      var selected_keywords = []
       var selected_categories = Object.keys(checked)
       for (ci in selected_categories){
           console.log(ci, checkbox2category[selected_categories[ci]])
+          selected_keywords.push(checkbox2category[selected_categories[ci]])
       }
-
-
+      $('input[name="selected_categories"]').val(selected_keywords.join(';'));
+      console.log($('#form_selected_categories').length)
+      $('#form_selected_categories').submit()
   }
   </script>
 

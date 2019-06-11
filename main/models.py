@@ -75,7 +75,7 @@ class ParticipantType(models.Model):
 class Dewey(models.Model):
     number = models.IntegerField(null=True)
     label = models.TextField()
-    level = models.IntegerField()
+    level = models.IntegerField(null=True)
     parents = models.ForeignKey('Dewey', related_name='dewey_parents', on_delete=models.DO_NOTHING, null=True)
     children = models.ForeignKey('Dewey', related_name='dewey_children', on_delete=models.DO_NOTHING, null=True)
 
@@ -110,8 +110,6 @@ class Attachment(models.Model):
     url_path = models.TextField()
     created_on = models.DateTimeField(auto_now=True)
     location = models.TextField()
-
-
 
 
 class Record(models.Model):
@@ -238,9 +236,11 @@ class UserLocation(models.Model):
 
 
 class UserExpertise(models.Model):
-    dewey = models.ForeignKey(Dewey, on_delete=models.DO_NOTHING)
-    rating_score = models.DecimalField(decimal_places=4, max_digits=7)
-    answers = models.ForeignKey(Answer, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey('User', on_delete=models.DO_NOTHING)
+    keyword = models.CharField(max_length=32)
+    is_active = models.BooleanField(default=True)
+    rating_score = models.DecimalField(decimal_places=4, max_digits=7, null=True)
+    answers = models.ForeignKey(Answer, on_delete=models.DO_NOTHING, null=True)
 
 
 class UserLogin(models.Model):
@@ -292,7 +292,7 @@ class User(AbstractUser):
     answers = models.ForeignKey(Answer, related_name='user_answers', on_delete=models.DO_NOTHING, null=True)
     questions = models.ForeignKey(Question, related_name='user_questions', on_delete=models.DO_NOTHING, null=True)
     bids = models.ManyToManyField(Bids, related_name='user_bids')
-    expertise = models.ForeignKey(UserExpertise, on_delete=models.DO_NOTHING, null=True)
+    #expertise = models.ForeignKey(UserExpertise, on_delete=models.DO_NOTHING, null=True)
     locations = models.ForeignKey(UserLocation, on_delete=models.DO_NOTHING, null=True)
     multilingual = models.BooleanField(default=False, null=True)
     created_on = models.DateTimeField(auto_now=True)

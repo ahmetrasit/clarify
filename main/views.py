@@ -92,8 +92,28 @@ def sign_out(request):
 
 @login_required(login_url='/sign-in/')
 def tell(request):
+
+    def checkAndSave(user, categories):
+        multiple = False
+        for category in categories.split(";"):
+            models.UserExpertise.objects.update_or_create(
+                user = user,
+                keyword= category
+            )
+            multiple = True
+        if multiple:
+            user.can_tell = True
+            user.save()
+
+    if request.POST:
+        print('post', request.POST['selected_categories'])
+        checkAndSave(request.user, request.POST['selected_categories'])
+    else:
+        print('not post', request.user.can_tell)
     if request.user.can_tell:
-        return render(request, 'tell.html')
+        return render(request, 'tell.html', {'expertise':models.UserExpertise.objects.filter(user=request.user)})
     else:
         return render(request, 'knowledge.html')
+
+
 
